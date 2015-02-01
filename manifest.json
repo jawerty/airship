@@ -1,0 +1,26 @@
+{
+	"manifest_version": 2,
+	"name": "Airship",
+	"description": "Share files via bluetooth in the browser",
+	"version": "1.1",
+	"icons": {
+		//"128": "128.png"
+	},
+	"app": {
+		//"launch":{
+        //    "local_path":"index.html"
+        //},
+        "background": {
+			"scripts": [ "js/background.js" ],
+			"persistent": false
+		}
+	},
+	"permissions": [
+		"unlimitedStorage",
+		"notifications"
+	],
+	"bluetooth": {
+		//"uuids": [ "1105", "1106" ],
+		"socket": true
+	}
+}
