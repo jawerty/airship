@@ -7,20 +7,27 @@
 		//"128": "128.png"
 	},
 	"app": {
-		//"launch":{
-        //    "local_path":"index.html"
-        //},
         "background": {
 			"scripts": [ "js/background.js" ],
 			"persistent": false
 		}
 	},
 	"permissions": [
-		"unlimitedStorage",
-		"notifications"
+		"storage",
+		"notifications",
+		"fileSystem",
+		"system.network"
 	],
-	"bluetooth": {
-		//"uuids": [ "1105", "1106" ],
-		//"socket": true
+	"sockets": {
+		"udp": {
+			"send": ["*:*"],
+			"bind": ["*:*"]
+		},
+		"tcp" : {
+			"connect": ["*:*"]
+		},
+		"tcpServer" : {
+			"listen": ["*:*"]
+		}
 	}
 }
