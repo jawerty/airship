@@ -17,6 +17,7 @@
 		"notifications",
 		"fileSystem",
 		"system.network"
+	
 	],
 	"sockets": {
 		"udp": {

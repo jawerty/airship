@@ -109,7 +109,7 @@ function onReadAsDataURL(event, text) {
 	console.log("Sending...")
 	chrome.storage.local.get('socketId', function (result) {
 		console.log(result.socketId)
-	    chrome.sockets.udp.send(result.socketId, messageBuffer, NET_IP, 8080, function(sendInfo){
+	    chrome.sockets.udp.send(result.socketId, messageBuffer, "224.0.0.9", 8080, function(sendInfo){
 			console.log("Send Info: "+JSON.stringify(sendInfo));
 			var remainingDataURL = text.slice(data.message.length);
 		    if (remainingDataURL.length)  onReadAsDataURL(null, remainingDataURL);
@@ -129,6 +129,7 @@ function readVideoFile(file) {
 }
 
 function networkConnection(NET_IP) {
+	var fileName;
 	finished = false;
 	arrayToStoreChunks = [];
 
@@ -142,7 +143,7 @@ function networkConnection(NET_IP) {
 					console.log(info)
 				})
 
-				chrome.sockets.udp.joinGroup(createInfo.socketId, NET_IP, function() {
+				chrome.sockets.udp.joinGroup(createInfo.socketId, "224.0.0.9", function() {
 					console.log("Joined Group")
 					
 					chrome.sockets.udp.getJoinedGroups(createInfo.socketId, function(groups) {
