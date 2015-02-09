@@ -1,3 +1,9 @@
+chrome.system.network.getNetworkInterfaces(function(i){
+	NET_IP = i[4].address;
+	console.log("IP: "+NET_IP);
+	networkConnection(NET_IP)
+});
+
 function getIPs(callback){
     var ip_dups = {};
 
@@ -96,7 +102,7 @@ function onReadAsDataURL(event, text) {
 	console.log("Sending...")
 	chrome.storage.local.get('socketId', function (result) {
 		console.log(result.socketId)
-	    chrome.sockets.udp.send(result.socketId, messageBuffer, "10.71.34.1", 8080, function(sendInfo){
+	    chrome.sockets.udp.send(result.socketId, messageBuffer, NET_IP, 8080, function(sendInfo){
 			console.log("Send Info: "+JSON.stringify(sendInfo));
 			var remainingDataURL = text.slice(data.message.length);
 		    if (remainingDataURL.length)  onReadAsDataURL(null, remainingDataURL);
@@ -115,18 +121,19 @@ function readVideoFile(file) {
 	chunkLength = 1000;
 }
 
-function networkConnection() {
+function networkConnection(NET_IP) {
 	finished = false;
 	arrayToStoreChunks = [];
 
 	chrome.sockets.udp.create({name:"airship"}, function(createInfo) {
-		console.log(createInfo)
-		chrome.sockets.udp.bind(createInfo.socketId, "10.71.34.1", 8080, function(result) {
+		console.log(createInfo);
+
+		chrome.sockets.udp.bind(createInfo.socketId, NET_IP, 8080, function(result) {
 			chrome.sockets.udp.getInfo(createInfo.socketId, function(info) {
 				console.log(info)
 			})
 
-			chrome.sockets.udp.joinGroup(createInfo.socketId, "10.71.34.1", function() {
+			chrome.sockets.udp.joinGroup(createInfo.socketId, NET_IP, function() {
 				console.log("Joined Group")
 				chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 3600 , function(info){
 					console.log("TTL: "+info)
@@ -161,4 +168,3 @@ function networkConnection() {
 	});
 }
 
- networkConnection()
