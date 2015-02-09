@@ -20,8 +20,9 @@
 	],
 	"sockets": {
 		"udp": {
-			"send": ["*:*"],
-			"bind": ["*:*"]
+			"bind": "*",
+   			"send": "*",
+			"multicastMembership": ""
 		},
 		"tcp" : {
 			"connect": ["*:*"]

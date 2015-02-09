@@ -1,3 +1,56 @@
+function getIPs(callback){
+    var ip_dups = {};
+
+    var RTCPeerConnection = window.RTCPeerConnection
+        || window.mozRTCPeerConnection
+        || window.webkitRTCPeerConnection;
+
+    if (!RTCPeerConnection) {
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        var win = iframe.contentWindow;
+        window.RTCPeerConnection = win.RTCPeerConnection;
+        window.mozRTCPeerConnection = win.mozRTCPeerConnection;
+        window.webkitRTCPeerConnection = win.webkitRTCPeerConnection;
+        RTCPeerConnection = window.RTCPeerConnection
+            || window.mozRTCPeerConnection
+            || window.webkitRTCPeerConnection;
+    }
+
+    var mediaConstraints = {
+        optional: [{RtpDataChannels: true}]
+    };
+
+    var servers = undefined;
+
+    if(window.webkitRTCPeerConnection)
+        servers = {iceServers: [{urls: "stun:stun.services.mozilla.com"}]};
+
+    var pc = new RTCPeerConnection(servers, mediaConstraints);
+
+    pc.onicecandidate = function(ice){
+
+        if(ice.candidate){
+
+            var ip_regex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/
+            var ip_addr = ip_regex.exec(ice.candidate.candidate)[1];
+
+            if(ip_dups[ip_addr] === undefined)
+                callback(ip_addr);
+
+            ip_dups[ip_addr] = true;
+        }
+    };
+
+    pc.createDataChannel("");
+
+    pc.createOffer(function(result){
+        pc.setLocalDescription(result, function(){}, function(){});
+
+    }, function(){});
+}
+
 function ab2str(buf) {
   return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
@@ -43,7 +96,7 @@ function onReadAsDataURL(event, text) {
 	console.log("Sending...")
 	chrome.storage.local.get('socketId', function (result) {
 		console.log(result.socketId)
-	    chrome.sockets.udp.send(result.socketId, messageBuffer, "10.0.0.139", 8080, function(sendInfo){
+	    chrome.sockets.udp.send(result.socketId, messageBuffer, "10.71.34.1", 8080, function(sendInfo){
 			console.log("Send Info: "+JSON.stringify(sendInfo));
 			var remainingDataURL = text.slice(data.message.length);
 		    if (remainingDataURL.length)  onReadAsDataURL(null, remainingDataURL);
@@ -62,16 +115,34 @@ function readVideoFile(file) {
 	chunkLength = 1000;
 }
 
-
-
 function networkConnection() {
 	finished = false;
 	arrayToStoreChunks = [];
 
 	chrome.sockets.udp.create({name:"airship"}, function(createInfo) {
 		console.log(createInfo)
-		chrome.sockets.udp.bind(createInfo.socketId, "10.0.0.139", 8080, function(result) {
+		chrome.sockets.udp.bind(createInfo.socketId, "10.71.34.1", 8080, function(result) {
+			chrome.sockets.udp.getInfo(createInfo.socketId, function(info) {
+				console.log(info)
+			})
 
+			chrome.sockets.udp.joinGroup(createInfo.socketId, "10.71.34.1", function() {
+				console.log("Joined Group")
+				chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 3600 , function(info){
+					console.log("TTL: "+info)
+				});
+				chrome.sockets.udp.getJoinedGroups(createInfo.socketId, function(groups) {
+					console.log("Get Joined Groups: "+groups)
+				})
+
+			});
+
+			$("#chooseFile").change(function(e) {
+				chrome.storage.local.set({'socketId': createInfo.socketId}, function() {
+		        	readVideoFile(e.target.files[0]);
+		        });
+				
+			});
 			chrome.sockets.udp.onReceive.addListener(function(info) {
 				if (info.socketId != createInfo.socketId) return;
 				arrayToStoreChunks.push(ab2str(info.data));
@@ -85,12 +156,7 @@ function networkConnection() {
 				
 			});
 
-			$("#chooseFile").change(function(e) {
-				chrome.storage.local.set({'socketId': createInfo.socketId}, function() {
-		          readVideoFile(e.target.files[0]);
-		        });
-				
-			});
+			
 		});
 	});
 }
