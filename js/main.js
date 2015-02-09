@@ -109,7 +109,7 @@ function onReadAsDataURL(event, text) {
 	console.log("Sending...")
 	chrome.storage.local.get('socketId', function (result) {
 		console.log(result.socketId)
-	    chrome.sockets.udp.send(result.socketId, messageBuffer, "224.0.0.251", 5353, function(sendInfo){
+	    chrome.sockets.udp.send(result.socketId, messageBuffer, "224.0.0.251", 80, function(sendInfo){
 			console.log("Send Info: "+JSON.stringify(sendInfo));
 			var remainingDataURL = text.slice(data.message.length);
 		    if (remainingDataURL.length)  onReadAsDataURL(null, remainingDataURL);
@@ -169,6 +169,9 @@ function networkConnection(NET_IP) {
 						arrayToStoreChunks = [];
 					}
 					
+				});
+				chrome.sockets.udp.onReceiveError.addListener(function(info) {
+					console.log("Receive Error: "+info)
 				});
 
 				
