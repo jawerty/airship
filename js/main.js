@@ -127,43 +127,44 @@ function networkConnection(NET_IP) {
 
 	chrome.sockets.udp.create({name:"airship"}, function(createInfo) {
 		console.log(createInfo);
-
-		chrome.sockets.udp.bind(createInfo.socketId, NET_IP, 8080, function(result) {
-			chrome.sockets.udp.getInfo(createInfo.socketId, function(info) {
-				console.log(info)
-			})
-
-			chrome.sockets.udp.joinGroup(createInfo.socketId, NET_IP, function() {
-				console.log("Joined Group")
-				chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 3600 , function(info){
-					console.log("TTL: "+info)
-				});
-				chrome.sockets.udp.getJoinedGroups(createInfo.socketId, function(groups) {
-					console.log("Get Joined Groups: "+groups)
+		chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 36 , function(info){
+			console.log("TTL: "+info)
+				
+			chrome.sockets.udp.bind(createInfo.socketId, "0.0.0.0", 8080, function(result) {
+				chrome.sockets.udp.getInfo(createInfo.socketId, function(info) {
+					console.log(info)
 				})
 
-			});
+				chrome.sockets.udp.joinGroup(createInfo.socketId, NET_IP, function() {
+					console.log("Joined Group")
+					
+					chrome.sockets.udp.getJoinedGroups(createInfo.socketId, function(groups) {
+						console.log("Get Joined Groups: "+groups)
+					})
 
-			$("#chooseFile").change(function(e) {
-				chrome.storage.local.set({'socketId': createInfo.socketId}, function() {
-		        	readVideoFile(e.target.files[0]);
-		        });
+				});
+
+				$("#chooseFile").change(function(e) {
+					chrome.storage.local.set({'socketId': createInfo.socketId}, function() {
+			        	readVideoFile(e.target.files[0]);
+			        });
+					
+				});
+				chrome.sockets.udp.onReceive.addListener(function(info) {
+					if (info.socketId != createInfo.socketId) return;
+					arrayToStoreChunks.push(ab2str(info.data));
+					console.log("Received Message");
+					if (finished == true) {
+						console.log("Finished")
+						saveToDisk(arrayToStoreChunks.join(''), fileName)
+						delete fileName;
+						arrayToStoreChunks = [];
+					}
+					
+				});
+
 				
 			});
-			chrome.sockets.udp.onReceive.addListener(function(info) {
-				if (info.socketId != createInfo.socketId) return;
-				arrayToStoreChunks.push(ab2str(info.data));
-				console.log("Received Message");
-				if (finished == true) {
-					console.log("Finished")
-					saveToDisk(arrayToStoreChunks.join(''), fileName)
-					delete fileName;
-					arrayToStoreChunks = [];
-				}
-				
-			});
-
-			
 		});
 	});
 }
