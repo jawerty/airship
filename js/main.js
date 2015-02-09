@@ -138,7 +138,7 @@ function networkConnection(NET_IP) {
 		chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 36, function(info){
 			console.log("TTL: "+info)
 				
-			chrome.sockets.udp.bind(createInfo.socketId, "0.0.0.0", 5353, function(result) {
+			chrome.sockets.udp.bind(createInfo.socketId, "0.0.0.0", 80, function(result) {
 				chrome.sockets.udp.getInfo(createInfo.socketId, function(info) {
 					console.log(info)
 				})
