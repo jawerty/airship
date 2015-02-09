@@ -22,9 +22,11 @@ var socketHandler = function() {
     function(win) {
       win.onClosed.addListener(function() {
         chrome.storage.local.get('socketId', function (result) {
-          chrome.sockets.udp.close(result.socketId, function() {
-            console.log("closed");
-          });
+          chrome.sockets.udp.leaveGroup(result.socketId, "224.0.0.251", function() {
+            chrome.sockets.udp.close(result.socketId, function() {
+              console.log("closed");
+            });
+          })
         });
       });
     }
