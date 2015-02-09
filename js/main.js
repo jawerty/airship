@@ -140,7 +140,9 @@ function networkConnection(NET_IP) {
 				
 			chrome.sockets.udp.bind(createInfo.socketId, "0.0.0.0", 80, function(result) {
 				chrome.sockets.udp.getInfo(createInfo.socketId, function(info) {
-					console.log(info)
+					chrome.storage.local.set({'socketId': createInfo.socketId}, function() {
+						console.log(info)
+					});
 				})
 
 				chrome.sockets.udp.joinGroup(createInfo.socketId, "224.0.0.251", function() {
@@ -153,11 +155,9 @@ function networkConnection(NET_IP) {
 				});
 
 				$("#chooseFile").change(function(e) {
-					chrome.storage.local.set({'socketId': createInfo.socketId}, function() {
-			        	readVideoFile(e.target.files[0]);
-			        });
-					
+			        readVideoFile(e.target.files[0]);
 				});
+
 				chrome.sockets.udp.onReceive.addListener(function(info) {
 					if (info.socketId != createInfo.socketId) return;
 					arrayToStoreChunks.push(ab2str(info.data));
