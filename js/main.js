@@ -109,7 +109,7 @@ function onReadAsDataURL(event, text) {
 	console.log("Sending...")
 	chrome.storage.local.get('socketId', function (result) {
 		console.log(result.socketId)
-	    chrome.sockets.udp.send(result.socketId, messageBuffer, "224.0.0.251", 8080, function(sendInfo){
+	    chrome.sockets.udp.send(result.socketId, messageBuffer, "224.0.0.251", 5353, function(sendInfo){
 			console.log("Send Info: "+JSON.stringify(sendInfo));
 			var remainingDataURL = text.slice(data.message.length);
 		    if (remainingDataURL.length)  onReadAsDataURL(null, remainingDataURL);
@@ -138,7 +138,7 @@ function networkConnection(NET_IP) {
 		chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 36, function(info){
 			console.log("TTL: "+info)
 				
-			chrome.sockets.udp.bind(createInfo.socketId, "0.0.0.0", 8080, function(result) {
+			chrome.sockets.udp.bind(createInfo.socketId, "0.0.0.0", 5353, function(result) {
 				chrome.sockets.udp.getInfo(createInfo.socketId, function(info) {
 					console.log(info)
 				})
