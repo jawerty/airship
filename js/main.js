@@ -1,7 +1,14 @@
 chrome.system.network.getNetworkInterfaces(function(i){
-	NET_IP = i[4].address;
-	console.log("IP: "+NET_IP);
-	networkConnection(NET_IP)
+	for (n=0; n<i.length; n++) {
+		if (i[n].address.split(".").length == 4) {
+			NET_IP = i[n].address;
+			console.log("IP: "+NET_IP);
+			networkConnection(NET_IP);
+			return;
+		}
+	}
+
+	
 });
 
 function getIPs(callback){
@@ -127,7 +134,7 @@ function networkConnection(NET_IP) {
 
 	chrome.sockets.udp.create({name:"airship"}, function(createInfo) {
 		console.log(createInfo);
-		chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 36 , function(info){
+		chrome.sockets.udp.setMulticastTimeToLive(createInfo.socketId, 36, function(info){
 			console.log("TTL: "+info)
 				
 			chrome.sockets.udp.bind(createInfo.socketId, "0.0.0.0", 8080, function(result) {
